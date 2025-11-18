@@ -5,7 +5,7 @@ export interface AuthUser {
     name: string;
     email: string;
     role: "Admin" | "Cashier";
-    accessToken: string;
+    token: string;
 }
 
 export interface AuthContextType {

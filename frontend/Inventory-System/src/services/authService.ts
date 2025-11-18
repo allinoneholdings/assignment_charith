@@ -23,5 +23,6 @@ export const signUp = async (userData: User): Promise<SignupResponse> => {
 
 export const login = async (loginData: { email: string; password: string }) => {
     const response = await apiClient.post("/auth/login", loginData);
+    console.log(response.data);
     return response.data;
 };

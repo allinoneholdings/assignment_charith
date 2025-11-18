@@ -53,7 +53,7 @@ const Login = () => {
             try {
                 const user = await login(formData)
                 console.log("Login successful:", user.role);
-                console.log(user.accessToken);
+                console.log(user.token);
 
                 toast.success(`Welcome, ${user.name}!`)
                 authenticate(user)

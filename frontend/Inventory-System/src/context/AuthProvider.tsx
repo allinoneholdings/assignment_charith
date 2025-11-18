@@ -10,7 +10,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const token = localStorage.getItem("token");
 
         if (token) {
-            setHeader(token); // attach token globally
+            setHeader(token);
+            console.log("Restored token:", token);
         }
 
         if (!storedUser || storedUser === "undefined") return;
@@ -25,10 +26,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }, []);
 
     const login = (userData: AuthUser) => {
+        // Store the user
         localStorage.setItem("user", JSON.stringify(userData));
-        localStorage.setItem("token", userData.accessToken);
+        localStorage.setItem("token", userData.token); // <-- use `token` from backend
 
-        setHeader(userData.accessToken); // IMPORTANT
+        setHeader(userData.token); // <-- attach token to API client
+        console.log("Logged in token:", userData.token);
+
         setUser(userData);
     };
 
