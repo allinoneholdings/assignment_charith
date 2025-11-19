@@ -13,27 +13,26 @@ export const createSale = async (req: IUserRequest, res: Response) => {
         if (!soldBy) return res.status(401).json({ message: 'Unauthorized access' });
 
         let totalAmount = 0;
+        const saleItems: ISaleItem[] = [];
 
         for (const i of items) {
-            const item = await Item.findById(i.item);
-            if (!item) return res.status(404).json({ message: 'Item not found' });
+            const item = await Item.findOne({ name: i.item });
+            if (!item) return res.status(404).json({ message: `Item "${i.item}" not found` });
             if (item.quantity < i.quantity)
                 return res.status(400).json({ message: `Not enough stock for ${item.name}` });
-
             item.quantity -= i.quantity;
             await item.save();
-
             totalAmount += i.quantity * item.unitPrice;
+            saleItems.push({ item: item._id, quantity: i.quantity });
         }
-
-        const sale = await Sale.create({ items, totalAmount, soldBy });
+        const sale = await Sale.create({ items: saleItems, totalAmount, soldBy });
         res.status(201).json(sale);
 
     } catch (err: unknown) {
         if (err instanceof Error) res.status(500).json({ message: err.message });
         else res.status(500).json({ message: 'Unknown error' });
     }
-}
+};
 
 export const getDailySales = async (req: Request, res: Response) => {
     try {
@@ -221,3 +220,26 @@ export const getMonthlySales = async (req: Request, res: Response) => {
         return res.status(500).json({ message });
     }
 };
+
+export const getAllSales = async (req: Request, res: Response) => {
+    try {
+        // Populate item name and soldBy name
+        const sales = await Sale.find()
+            .populate({
+                path: "items.item",
+                select: "name", // or "title" depending on your Item model
+            })
+            .populate({
+                path: "soldBy",
+                select: "name", // select fields you want
+            });
+
+        res.json(sales);
+    } catch (err: unknown) {
+        if (err instanceof Error) res.status(500).json({ message: err.message });
+        else res.status(500).json({ message: "Unknown error" });
+    }
+};
+
+
+

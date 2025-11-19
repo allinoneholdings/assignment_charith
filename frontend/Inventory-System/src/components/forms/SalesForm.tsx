@@ -39,7 +39,6 @@ const SaleForm: React.FC<SaleFormProps> = ({ onPrintBill }) => {
 
     return (
         <div className="space-y-6">
-            {/* Add Item by typing ID */}
             <div className="flex space-x-2 mb-4">
                 <input
                     type="text"
@@ -57,7 +56,6 @@ const SaleForm: React.FC<SaleFormProps> = ({ onPrintBill }) => {
                 </button>
             </div>
 
-            {/* Selected Items */}
             <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-3">Selected Items</h3>
                 {selectedItems.length === 0 ? (
@@ -99,7 +97,6 @@ const SaleForm: React.FC<SaleFormProps> = ({ onPrintBill }) => {
                 )}
             </div>
 
-            {/* Print Bill */}
             {selectedItems.length > 0 && (
                 <div className="border-t pt-4 flex justify-end">
                     <button

@@ -20,3 +20,8 @@ export const handleSave = async (itemsData:Omit<Item, "id">):Promise<Item> => {
     })
     return response.data;
 }
+
+export const getLowStock = async () : Promise<Item[]> => {
+    const response = await apiClient.get("/item/low-stock");
+    return response.data;
+}

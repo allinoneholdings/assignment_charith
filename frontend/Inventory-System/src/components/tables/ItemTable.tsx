@@ -12,7 +12,7 @@ const ItemsTable: React.FC<ItemsTableProps> = ({ items, onEdit, onDelete }) => {
     const formatPrice = (price: number) => {
         return new Intl.NumberFormat("en-US", {
             style: "currency",
-            currency: "USD",
+            currency: "LKR",
         }).format(price)
     }
 

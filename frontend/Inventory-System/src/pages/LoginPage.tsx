@@ -60,7 +60,7 @@ const Login = () => {
                 navigate("/dashboard")
             } catch (error) {
                 if (axios.isAxiosError(error)) {
-                    toast.error(error.message)
+                    toast.error("Invalid credentials. Please try again.")
                 } else {
                     toast.error("Something went wrong")
                 }

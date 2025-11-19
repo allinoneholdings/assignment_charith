@@ -1,29 +1,51 @@
-import apiClient, {BASE_URL} from "./apiClient";
-import type { Sale } from "../types/Sales";
-
-interface SaleItemPayload {
-    item: string;
-    quantity: number;
-}
+import apiClient from "./apiClient";
+import type { Sale, SaleItem } from "../types/Sales";
 
 interface CreateSalePayload {
-    items: SaleItemPayload[];
+    items: SaleItem[];
 }
 
 const salesService = {
-    // Create a new sale
     createSale: async (payload: CreateSalePayload): Promise<Sale> => {
-        const { data } = await apiClient.post<Sale>(`${BASE_URL}sales/create-sale`, payload);
+        const { data } = await apiClient.post<Sale>("/sales/create-sale", payload);
         return data;
     },
 
-    // Get PDF bill URL for a sale
-    getBillUrl: (saleId: string): string => {
-        return `${BASE_URL}sales/${saleId}/bill`;
+    getDailySales: async (): Promise<{
+        totalSales: number;
+        totalRevenue: number;
+        sales: Sale[];
+    }> => {
+        const { data } = await apiClient.get("/sales/daily");
+        return data;
     },
 
-    // You can add more sales-related methods here in future
-    // e.g., getAllSales, getSaleById, deleteSale, etc.
+    fetchAllSales: async () => {
+        const response = await apiClient.get("/sales/get-all");
+        return response.data;
+    },
+
+    getMonthlySales: async (): Promise<{
+        labels: string[];
+        revenueData: number[];
+        salesCountData: number[];
+        raw: any[];
+    }> => {
+        const { data } = await apiClient.get("/sales/monthly-report");
+        return data;
+    },
+
+    downloadSaleBill: async (saleId: string) => {
+        const response = await apiClient.get(`/sales/${saleId}/bill`, {
+            responseType: "blob",
+        });
+
+        const blob = new Blob([response.data], { type: "application/pdf" });
+        const link = document.createElement("a");
+        link.href = window.URL.createObjectURL(blob);
+        link.download = `Sale-${saleId}.pdf`;
+        link.click();
+    },
 };
 
 export default salesService;

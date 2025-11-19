@@ -9,7 +9,6 @@ const apiClient = axios.create({
     },
 });
 
-// Attach token for all API calls
 export const setHeader = (token: string | null) => {
     if (token) {
         apiClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;

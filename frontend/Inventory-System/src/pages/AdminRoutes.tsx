@@ -1,11 +1,11 @@
-import { Navigate, Outlet } from "react-router-dom"
+import { Outlet } from "react-router-dom"
 import Sidebar from "../components/Sidebar"
-import {useAuth} from "../context/UseAuth.ts";
+// import {useAuth} from "../context/UseAuth.ts";
 
 const AdminRoutes = () => {
-    const {isLoggedIn} = useAuth()
+    // const {isLoggedIn} = useAuth()
 
-    if (!isLoggedIn) return <Navigate to='/login' />
+    // if (!isLoggedIn) return <Navigate to='/login' />
 
     return (
         <div className='flex h-screen overflow-hidden'>

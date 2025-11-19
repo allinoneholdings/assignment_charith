@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import {signUp} from "../services/authService.ts";
+import { signUp } from "../services/authService.ts";
+import toast from "react-hot-toast";
 
 interface FormData {
     name: string;
@@ -30,33 +31,21 @@ const Signup = () => {
     const validateForm = (): boolean => {
         const newErrors: FormErrors = {};
 
-        // Name validation
-        if (!formData.name) {
-            newErrors.name = 'Name is required';
-        } else if (formData.name.length < 2) {
-            newErrors.name = 'Name must be at least 2 characters';
-        }
+        if (!formData.name) newErrors.name = 'Name is required';
+        else if (formData.name.length < 2) newErrors.name = 'Name must be at least 2 characters';
 
-        // Email validation
-        if (!formData.email) {
-            newErrors.email = 'Email is required';
-        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+        if (!formData.email) newErrors.email = 'Email is required';
+        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
             newErrors.email = 'Please enter a valid email address';
-        }
 
-        // Password validation
-        if (!formData.password) {
-            newErrors.password = 'Password is required';
-        } else if (formData.password.length < 6) {
+        if (!formData.password) newErrors.password = 'Password is required';
+        else if (formData.password.length < 6)
             newErrors.password = 'Password must be at least 6 characters';
-        }
 
-        // Confirm password validation
-        if (!formData.confirmPassword) {
+        if (!formData.confirmPassword)
             newErrors.confirmPassword = 'Please confirm your password';
-        } else if (formData.password !== formData.confirmPassword) {
+        else if (formData.password !== formData.confirmPassword)
             newErrors.confirmPassword = 'Passwords do not match';
-        }
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -64,19 +53,31 @@ const Signup = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
         if (validateForm()) {
             try {
                 const response = await signUp({
                     _id: '',
                     name: formData.name,
                     email: formData.email,
-                    password: formData.password
+                    password: formData.password,
+                    role: "Cashier"
                 });
 
                 console.log('Signup successful:', response);
+
+                // 🎉 Success Toast
+                toast.success("Account created successfully!");
+
                 navigate('/login');
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Signup error:', error);
+
+                toast.error(
+                    error?.response?.data?.message ||
+                    "Signup failed. Try again with a different email."
+                );
+
                 setErrors({ email: 'Signup failed. Please try again later or use a different email.' });
             }
         }
@@ -84,11 +85,12 @@ const Signup = () => {
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
+
         setFormData(prev => ({
             ...prev,
             [name]: value
         }));
-        // Clear error when user types
+
         if (errors[name as keyof FormErrors]) {
             setErrors(prev => ({
                 ...prev,
@@ -100,13 +102,14 @@ const Signup = () => {
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-md w-full space-y-8">
-                <div>
-                    <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                        Create your account
-                    </h2>
-                </div>
+                <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+                    Create your account
+                </h2>
+
                 <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
                     <div className="space-y-4">
+
+                        {/* Name */}
                         <div>
                             <label htmlFor="name" className="block text-sm font-medium text-gray-700">
                                 Full Name
@@ -124,6 +127,8 @@ const Signup = () => {
                             />
                             {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
                         </div>
+
+                        {/* Email */}
                         <div>
                             <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                                 Email address
@@ -141,6 +146,8 @@ const Signup = () => {
                             />
                             {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
                         </div>
+
+                        {/* Password */}
                         <div>
                             <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                                 Password
@@ -158,6 +165,8 @@ const Signup = () => {
                             />
                             {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password}</p>}
                         </div>
+
+                        {/* Confirm Password */}
                         <div>
                             <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
                                 Confirm Password
@@ -179,21 +188,21 @@ const Signup = () => {
                         </div>
                     </div>
 
-                    <div>
-                        <button
-                            type="submit"
-                            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                        >
-                            Sign up
-                        </button>
-                    </div>
+                    {/* Submit Button */}
+                    <button
+                        type="submit"
+                        className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+                    >
+                        Sign up
+                    </button>
 
+                    {/* Footer */}
                     <div className="text-center">
                         <p className="text-sm text-gray-600">
                             Already have an account?{' '}
                             <Link
                                 to="/login"
-                                className="font-medium text-indigo-600 hover:text-indigo-500 focus:outline-none focus:underline"
+                                className="font-medium text-indigo-600 hover:text-indigo-500 focus:underline"
                             >
                                 Sign in
                             </Link>
