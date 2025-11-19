@@ -58,6 +58,20 @@ export const updateItem = async (req: Request, res: Response) => {
     }
 }
 
+export const deleteItem = async (req: Request, res: Response) => {
+    try {
+        const item = await Item.findById(req.params.id);
+        if (!item) return res.status(404).json({ message: 'Item not found' });
+
+        await item.deleteOne();
+        res.json({ message: 'Item deleted successfully' });
+
+    } catch (err: unknown) {
+        if (err instanceof Error) res.status(500).json({ message: err.message });
+        else res.status(500).json({ message: 'Unknown error' });
+    }
+};
+
 export const getLowStockItems = async (req: Request, res: Response) => {
     try {
         const items = await Item.find({ quantity: { $lt: 5 } });

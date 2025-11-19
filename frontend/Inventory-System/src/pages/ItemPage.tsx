@@ -1,102 +1,129 @@
-import React, { useEffect, useState } from "react"
-import { MdAdd } from "react-icons/md"
-import Dialog from "../components/Dialog"
-import type { Item } from "../types/Items.ts"
-import ItemsTable from "../components/tables/ItemTable.tsx"
-import ItemForm from "../components/forms/ItemForm"
-import toast from "react-hot-toast"
-import { CircleLoader } from "react-spinners"
-import { fetchAllItems, handleUpdate, handleSave } from "../services/itemServices.ts"
-import { useAuth } from "../context/UseAuth.ts"
+import React, { useEffect, useState } from "react";
+import { MdAdd } from "react-icons/md";
+import Dialog from "../components/Dialog";
+import type { Item } from "../types/Items.ts";
+import ItemsTable from "../components/tables/ItemTable.tsx";
+import ItemForm from "../components/forms/ItemForm";
+import toast from "react-hot-toast";
+import { CircleLoader } from "react-spinners";
+import { fetchAllItems, handleUpdate, handleSave, handleDelete } from "../services/itemServices.ts";
+import { useAuth } from "../context/UseAuth.ts";
 
 const ItemsPage: React.FC = () => {
-    const { user } = useAuth()
-    const [items, setItems] = useState<Item[]>([])
-    const [isLoading, setIsLoading] = useState<boolean>(false)
+    const { user } = useAuth();
+    const [items, setItems] = useState<Item[]>([]);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
 
-    const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
-    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
-    const [selectedItem, setSelectedItem] = useState<Item | null>(null)
+    const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+    const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
     useEffect(() => {
-        getAllItems()
-    }, [])
+        getAllItems();
+    }, []);
 
     const getAllItems = async () => {
         try {
-            setIsLoading(true)
-            const result = await fetchAllItems()
-            setItems(result)
+            setIsLoading(true);
+            const result = await fetchAllItems();
+            setItems(result);
         } catch (err) {
-            toast.error("Something went wrong...")
+            toast.error("Something went wrong while fetching items.");
         } finally {
-            setIsLoading(false)
+            setIsLoading(false);
         }
-    }
+    };
 
-    // Handlers for add/edit (only admin/allowed roles)
     const handleAddItem = () => {
-        if (!user || user.role !== "Admin") return
-        setSelectedItem(null)
-        setIsAddDialogOpen(true)
-    }
+        if (!user || user.role !== "Admin") return;
+        setSelectedItem(null);
+        setIsAddDialogOpen(true);
+    };
 
     const handleEditItem = (item: Item) => {
-        if (!user || user.role !== "Admin") return
-        setSelectedItem(item)
-        setIsEditDialogOpen(true)
-    }
+        if (!user || user.role !== "Admin") return;
+        setSelectedItem(item);
+        setIsEditDialogOpen(true);
+    };
+
+    const handleDeleteItem = (item: Item) => {
+        if (!user || user.role !== "Admin") {
+            toast.error("Only Admin can delete items");
+            return;
+        }
+        setSelectedItem(item);
+        setIsDeleteDialogOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!user || user.role !== "Admin") return; // Extra safety
+        if (selectedItem) {
+            try {
+                await handleDelete(selectedItem._id); // Use _id
+                toast.success("Item deleted successfully");
+                await getAllItems(); // Refresh list
+            } catch (error) {
+                console.error("Delete error:", error);
+                toast.error("Failed to delete item");
+            } finally {
+                setIsDeleteDialogOpen(false);
+                setSelectedItem(null);
+            }
+        }
+    };
 
     const handleFormSubmit = async (itemData: Omit<Item, "_id">) => {
-        if (!user || user.role !== "Admin") return
+        if (!user || user.role !== "Admin") return;
 
         if (selectedItem) {
             try {
-                const updatedItem = await handleUpdate(selectedItem._id, itemData)
+                const updatedItem = await handleUpdate(selectedItem._id, itemData);
                 setItems((prev) =>
                     prev.map((item) => (item._id === selectedItem._id ? updatedItem : item))
-                )
-                toast.success("Item updated successfully")
-                setIsEditDialogOpen(false)
+                );
+                toast.success("Item updated successfully");
+                setIsEditDialogOpen(false);
             } catch {
-                toast.error("Failed to update item")
+                toast.error("Failed to update item");
             }
         } else {
             try {
-                const newItem = await handleSave(itemData)
-                setItems((prev) => [...prev, newItem])
-                toast.success("Item added successfully")
-                setIsAddDialogOpen(false)
+                const newItem = await handleSave(itemData);
+                setItems((prev) => [...prev, newItem]);
+                toast.success("Item added successfully");
+                setIsAddDialogOpen(false);
             } catch {
-                toast.error("Failed to add item")
+                toast.error("Failed to add item");
             }
         }
-        setSelectedItem(null)
-    }
+        setSelectedItem(null);
+    };
 
     const cancelDialog = () => {
-        setIsAddDialogOpen(false)
-        setIsEditDialogOpen(false)
-        setSelectedItem(null)
-    }
+        setIsAddDialogOpen(false);
+        setIsEditDialogOpen(false);
+        setIsDeleteDialogOpen(false);
+        setSelectedItem(null);
+    };
 
     const getTotalValue = () => {
-        return items.reduce((total, item) => total + item.unitPrice * item.quantity, 0)
-    }
+        return items.reduce((total, item) => total + item.unitPrice * item.quantity, 0);
+    };
 
     const formatPrice = (price: number) => {
         return new Intl.NumberFormat("en-US", {
             style: "currency",
-            currency: "USD",
-        }).format(price)
-    }
+            currency: "LKR",
+        }).format(price);
+    };
 
     if (isLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-100">
                 <CircleLoader color="#4F46E5" size={80} />
             </div>
-        )
+        );
     }
 
     return (
@@ -124,7 +151,7 @@ const ItemsPage: React.FC = () => {
                 <ItemsTable
                     items={items}
                     onEdit={user?.role === "Admin" ? handleEditItem : undefined}
-                    onDelete={undefined}
+                    onDelete={user?.role === "Admin" ? handleDeleteItem : undefined}
                 />
 
                 {user?.role === "Admin" && (
@@ -132,8 +159,8 @@ const ItemsPage: React.FC = () => {
                         isOpen={isAddDialogOpen}
                         onCancel={cancelDialog}
                         onConfirm={() => {
-                            const form = document.querySelector("form") as HTMLFormElement
-                            if (form) form.requestSubmit()
+                            const form = document.querySelector("form") as HTMLFormElement;
+                            if (form) form.requestSubmit();
                         }}
                         title="Add New Item"
                     >
@@ -146,17 +173,28 @@ const ItemsPage: React.FC = () => {
                         isOpen={isEditDialogOpen}
                         onCancel={cancelDialog}
                         onConfirm={() => {
-                            const form = document.querySelector("form") as HTMLFormElement
-                            if (form) form.requestSubmit()
+                            const form = document.querySelector("form") as HTMLFormElement;
+                            if (form) form.requestSubmit();
                         }}
                         title="Edit Item"
                     >
                         <ItemForm item={selectedItem ?? undefined} onSubmit={handleFormSubmit} />
                     </Dialog>
                 )}
+
+                <Dialog
+                    isOpen={isDeleteDialogOpen}
+                    onCancel={cancelDialog}
+                    onConfirm={confirmDelete}
+                    title="Delete Item"
+                >
+                    <p className="text-gray-700">
+                        Are you sure you want to delete <strong>{selectedItem?.name}</strong>? This action cannot be undone.
+                    </p>
+                </Dialog>
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default ItemsPage
+export default ItemsPage;

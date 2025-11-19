@@ -223,15 +223,14 @@ export const getMonthlySales = async (req: Request, res: Response) => {
 
 export const getAllSales = async (req: Request, res: Response) => {
     try {
-        // Populate item name and soldBy name
         const sales = await Sale.find()
             .populate({
                 path: "items.item",
-                select: "name", // or "title" depending on your Item model
+                select: "name",
             })
             .populate({
                 path: "soldBy",
-                select: "name", // select fields you want
+                select: "name",
             });
 
         res.json(sales);

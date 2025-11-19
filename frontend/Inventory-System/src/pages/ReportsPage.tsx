@@ -35,7 +35,7 @@ const ReportsPage: React.FC = () => {
             const items = await getLowStock();
             setLowStockItems(items);
         } catch (err: any) {
-            toast.error("Failed to load low stock items");
+            toast.success("Load low stock items");
         }
     };
 

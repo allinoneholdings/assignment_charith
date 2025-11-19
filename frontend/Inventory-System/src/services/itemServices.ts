@@ -6,8 +6,8 @@ export const fetchAllItems = async () : Promise<Item[]> => {
     return response.data;
 }
 
-export const handleDelete = async (itemId:number): Promise<void> => {
-    await apiClient.delete(`/items/${itemId}`,{});
+export const handleDelete = async (itemId: string): Promise<void> => {
+    await apiClient.delete(`/item/delete/${itemId}`);
 }
 
 export const handleUpdate = async (id:number, item:Omit<Item, "id">):Promise<Item> => {
